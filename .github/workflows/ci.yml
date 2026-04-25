@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate skills, hooks, and scripts
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate skill frontmatter
+        run: python3 scripts/validate_skills.py
+
+      - name: Check shell script syntax
+        run: |
+          bash -n .claude/hooks/session-start.sh
+          bash -n .claude/hooks/post-kaggle-action.sh
+          bash -n .claude/hooks/stop.sh
+          bash -n scripts/kln
+          bash -n scripts/new-competition.sh
+          bash -n install.sh
+          echo "All shell scripts pass syntax check."
+
+      - name: Check scripts are executable
+        run: |
+          check_x() { test -x "$1" || { echo "NOT executable: $1"; exit 1; }; }
+          check_x .claude/hooks/session-start.sh
+          check_x .claude/hooks/post-kaggle-action.sh
+          check_x .claude/hooks/stop.sh
+          check_x scripts/kln
+          check_x scripts/new-competition.sh
+          check_x install.sh
+          echo "All executable bits set."
+
+      - name: Smoke-test kln (empty corpus)
+        run: |
+          bash scripts/kln list
+          echo "kln list ok (empty corpus is expected)."
+
+      - name: Smoke-test _kln_digest.py (empty corpus)
+        run: |
+          python3 scripts/_kln_digest.py LEARNINGS.md .learnings
+          echo "_kln_digest.py ok."
+
+      - name: Validate submit.py syntax
+        run: python3 -m py_compile shared/utils/submit.py && echo "submit.py syntax ok."
