@@ -1,0 +1,14 @@
+competitions/*/data/
+competitions/*/.venv/
+competitions/*/replays/
+competitions/*/submissions/*.csv
+competitions/*/submissions/*.zip
+competitions/*/submissions/*.tar.gz
+competitions/*/__pycache__/
+competitions/*/*.pkl
+competitions/*/*.pt
+.env
+*.env
+__pycache__/
+*.pyc
+.DS_Store

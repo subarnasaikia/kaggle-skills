@@ -1,0 +1,114 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(kaggle --version)",
+      "Bash(kaggle --help)",
+      "Bash(kaggle config view)",
+      "Bash(kaggle config set*)",
+      "Bash(kaggle config unset*)",
+      "Bash(kaggle competitions list*)",
+      "Bash(kaggle competitions files*)",
+      "Bash(kaggle competitions download*)",
+      "Bash(kaggle competitions submissions*)",
+      "Bash(kaggle competitions leaderboard*)",
+      "Bash(kaggle kernels list*)",
+      "Bash(kaggle kernels files*)",
+      "Bash(kaggle kernels pull*)",
+      "Bash(kaggle kernels status*)",
+      "Bash(kaggle kernels output*)",
+      "Bash(kaggle kernels init*)",
+      "Bash(kaggle datasets list*)",
+      "Bash(kaggle datasets files*)",
+      "Bash(kaggle datasets download*)",
+      "Bash(kaggle datasets status*)",
+      "Bash(kaggle datasets init*)",
+      "Bash(kaggle datasets metadata*)",
+      "Bash(kaggle models list*)",
+      "Bash(kaggle models get*)",
+      "Bash(kaggle models init*)",
+      "Bash(kaggle models variations files*)",
+      "Bash(kaggle models variations get*)",
+      "Bash(kaggle models variations init*)",
+      "Bash(kaggle models variations versions files*)",
+      "Bash(kaggle models variations versions download*)",
+      "Bash(uv venv*)",
+      "Bash(uv pip install*)",
+      "Bash(uv pip list*)",
+      "Bash(uv run*)",
+      "Bash(uv tool upgrade kaggle)",
+      "Bash(python3 -m pip list*)",
+      "Bash(python3 -c *)",
+      "Bash(python3 *.py)",
+      "Bash(pytest*)",
+      "Bash(jupyter*)",
+      "Bash(papermill*)",
+      "Bash(ls*)",
+      "Bash(tree*)",
+      "Bash(wc*)",
+      "Bash(file*)",
+      "Bash(unzip*)",
+      "Bash(scripts/kln*)",
+      "Bash(./scripts/kln*)",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ],
+    "ask": [
+      "Bash(kaggle competitions submit*)",
+      "Bash(kaggle kernels push*)",
+      "Bash(kaggle datasets create*)",
+      "Bash(kaggle datasets version*)",
+      "Bash(kaggle datasets delete*)",
+      "Bash(kaggle kernels delete*)",
+      "Bash(kaggle models create*)",
+      "Bash(kaggle models update*)",
+      "Bash(kaggle models delete*)",
+      "Bash(kaggle models variations create*)",
+      "Bash(kaggle models variations update*)",
+      "Bash(kaggle models variations delete*)",
+      "Bash(kaggle models variations versions create*)",
+      "Bash(kaggle models variations versions delete*)",
+      "Bash(git push*)",
+      "Bash(rm -rf*)",
+      "Bash(pip install*)",
+      "Bash(pip3 install*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/session-start.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/post-kaggle-action.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/stop.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

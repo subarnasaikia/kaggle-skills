@@ -1,0 +1,154 @@
+#!/usr/bin/env bash
+# kln — Kaggle Learnings CLI
+# Tiny helper for humans to add/search/list learnings in .learnings/.
+# Claude has its own skills (capture-learning, recall-learnings); this is for you.
+#
+# Usage:
+#   kln add                     # interactive (opens $EDITOR with a template)
+#   kln list [--scope SLUG] [--tag TAG] [--recurring] [--cost high]
+#   kln show <id>
+#   kln search <regex>
+#   kln tags                    # frequency table of tags
+#   kln digest                  # refresh LEARNINGS.md RECENT and PINNED blocks
+#   kln archive <id> [reason]
+#
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+DIR="$ROOT/.learnings"
+DIGEST="$ROOT/LEARNINGS.md"
+EDITOR="${EDITOR:-vi}"
+
+mkdir -p "$DIR" "$DIR/archive"
+
+usage() { sed -n '4,14p' "$0"; exit 1; }
+
+next_id() {
+  local date_today
+  date_today="$(date +%Y-%m-%d)"
+  local n
+  n="$(ls "$DIR"/L-"$date_today"-*.md 2>/dev/null | wc -l | tr -d ' ')"
+  printf 'L-%s-%03d' "$date_today" "$((n+1))"
+}
+
+cmd_add() {
+  local id path
+  id="$(next_id)"
+  path="$DIR/$id.md"
+  cat > "$path" <<EOF
+---
+id: $id
+date: $(date +%Y-%m-%d)
+scope: global
+tags: []
+severity: scar
+cost: medium
+recurring: false
+---
+
+## Rule
+
+
+## Scar (what bit us)
+
+
+## How to apply
+
+
+## Related
+
+EOF
+  "$EDITOR" "$path"
+  echo "saved: $path"
+}
+
+cmd_list() {
+  local scope="" tag="" recurring="" cost=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --scope) scope="$2"; shift 2 ;;
+      --tag) tag="$2"; shift 2 ;;
+      --recurring) recurring="true"; shift ;;
+      --cost) cost="$2"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+  shopt -s nullglob
+  local files=( "$DIR"/L-*.md )
+  shopt -u nullglob
+  [ ${#files[@]} -eq 0 ] && { echo "(no learnings yet)"; return 0; }
+  for f in "${files[@]}"; do
+    local id s t c r rule
+    id="$(grep -m1 '^id:' "$f" | awk '{print $2}')"
+    s="$(grep -m1 '^scope:' "$f" | awk '{print $2}')"
+    t="$(grep -m1 '^tags:' "$f" | sed 's/^tags: *//')"
+    c="$(grep -m1 '^cost:' "$f" | awk '{print $2}')"
+    r="$(grep -m1 '^recurring:' "$f" | awk '{print $2}')"
+    rule="$(awk '/^## Rule/{flag=1;next}/^## /{flag=0}flag' "$f" | sed 's/^ *//' | awk 'NF{print;exit}')"
+    [ -n "$scope" ] && [ "$s" != "$scope" ] && continue
+    [ -n "$tag" ] && ! echo "$t" | grep -q "\b$tag\b" && continue
+    [ -n "$recurring" ] && [ "$r" != "true" ] && continue
+    [ -n "$cost" ] && [ "$c" != "$cost" ] && continue
+    printf '%-22s %-14s %-7s %-4s %s\n' "$id" "$s" "$c" "$r" "${rule:-(no rule line)}"
+  done
+}
+
+cmd_show() {
+  local id="$1"
+  local path="$DIR/$id.md"
+  [ ! -f "$path" ] && path="$DIR/archive/$id.md"
+  [ ! -f "$path" ] && { echo "not found: $id" >&2; exit 1; }
+  cat "$path"
+}
+
+cmd_search() {
+  local q="$1"
+  shopt -s nullglob
+  local files=( "$DIR"/L-*.md )
+  shopt -u nullglob
+  [ ${#files[@]} -eq 0 ] && { echo "(no learnings yet)"; return 0; }
+  grep -l -i -E "$q" "${files[@]}" 2>/dev/null || true
+}
+
+cmd_tags() {
+  shopt -s nullglob
+  local files=( "$DIR"/L-*.md )
+  shopt -u nullglob
+  [ ${#files[@]} -eq 0 ] && { echo "(no learnings yet)"; return 0; }
+  grep -h '^tags:' "${files[@]}" 2>/dev/null \
+    | sed 's/^tags: *\[//; s/\]$//; s/,/\n/g' \
+    | tr -d ' "' \
+    | grep -v '^$' \
+    | sort | uniq -c | sort -rn
+}
+
+cmd_digest() {
+  [ ! -f "$DIGEST" ] && { echo "no $DIGEST" >&2; exit 1; }
+  /usr/bin/python3 "$ROOT/scripts/_kln_digest.py" "$DIGEST" "$DIR"
+  echo "updated: $DIGEST"
+}
+
+cmd_archive() {
+  local id="$1" reason="${2:-no reason given}"
+  local path="$DIR/$id.md"
+  [ ! -f "$path" ] && { echo "not found: $id" >&2; exit 1; }
+  /usr/bin/awk -v r="$reason" -v d="$(date +%Y-%m-%d)" '
+    /^---$/ && !done { print; print "archived_date: " d; print "archived_reason: " r; done=1; next }
+    { print }
+  ' "$path" > "$path.new" && mv "$path.new" "$path"
+  mv "$path" "$DIR/archive/"
+  echo "archived: $DIR/archive/$id.md"
+}
+
+[ $# -lt 1 ] && usage
+cmd="$1"; shift
+case "$cmd" in
+  add) cmd_add "$@" ;;
+  list) cmd_list "$@" ;;
+  show) cmd_show "$@" ;;
+  search) cmd_search "$@" ;;
+  tags) cmd_tags "$@" ;;
+  digest) cmd_digest "$@" ;;
+  archive) cmd_archive "$@" ;;
+  *) usage ;;
+esac
