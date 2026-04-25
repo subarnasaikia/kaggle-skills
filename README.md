@@ -25,35 +25,62 @@ Kaggle auth: put your API token (a single `KGAT_…` line) in `~/.kaggle/access_
 chmod 600 ~/.kaggle/access_token
 ```
 
-## Quick install
+## Quick install — let Claude Code do it
+
+Paste this prompt directly into Claude Code. It will clone the toolkit, ask whether you're adding it to an existing workspace or starting fresh, and set everything up for you.
+
+```
+Set up my Kaggle workspace with kaggle-skills.
+
+Clone the toolkit:
+  git clone --depth 1 https://github.com/subarnasaikia/kaggle-skills.git /tmp/kaggle-skills
+
+Then ask me ONE question before doing anything else:
+  "Do you have an existing Kaggle workspace directory, or do you want to create a new one?"
+
+  → Existing workspace: ask for the path, then run:
+      bash /tmp/kaggle-skills/install.sh <my-path>
+
+  → New workspace: ask where to create it (suggest ~/kaggle as default), then run:
+      bash /tmp/kaggle-skills/install.sh <chosen-path>
+
+After the install finishes:
+  1. Tell me where my workspace lives and confirm which files were copied.
+  2. Add a kaggle-skills section to my global ~/.claude/CLAUDE.md so all future
+     sessions know the skills are available:
+
+     ## kaggle-skills
+     Workspace: <workspace-path>
+     Repo: https://github.com/subarnasaikia/kaggle-skills
+     Skills: new-competition, submit-competition, run-local-eval, improve-agent,
+             debug-agent, leaderboard-check, eda-audit, ensemble-blend,
+             log-experiment, capture-learning, recall-learnings,
+             preflight-consult, post-submission-review, retrospect-session.
+     Ritual: recall-learnings before any non-trivial move. capture-learning when
+             surprised. retrospect-session before closing the laptop.
+
+  3. Ask me: "Do you want to open Claude Code in the workspace now?"
+```
+
+## Manual install (terminal)
 
 ```bash
-git clone git@github.com:subarnasaikia/kaggle-skills.git ~/kaggle
-cd ~/kaggle
-bash install.sh
+# HTTPS (no SSH config needed)
+git clone --depth 1 https://github.com/subarnasaikia/kaggle-skills.git /tmp/kaggle-skills
+
+# Fresh workspace
+bash /tmp/kaggle-skills/install.sh ~/kaggle
+
+# OR — add to an existing workspace
+bash /tmp/kaggle-skills/install.sh /path/to/your/existing/kaggle-workspace
 ```
 
 The install script will:
-1. Verify prerequisites.
-2. Copy `.claude/`, `scripts/`, and template files into the workspace.
-3. Make scripts executable.
-4. Print what to do next.
-
-## Manual install
-
-If you already have a Kaggle workspace:
-
-```bash
-# Copy skills + hooks into your workspace
-cp -r .claude/ /path/to/your/kaggle-workspace/
-cp -r scripts/ /path/to/your/kaggle-workspace/
-cp LEARNINGS.md /path/to/your/kaggle-workspace/
-cp CLAUDE.md /path/to/your/kaggle-workspace/
-chmod +x /path/to/your/kaggle-workspace/scripts/kln
-chmod +x /path/to/your/kaggle-workspace/scripts/new-competition.sh
-```
-
-Then edit `CLAUDE.md` to set your workspace root path in the hooks config.
+1. Verify prerequisites (kaggle CLI, uv, python3, git).
+2. Copy `.claude/`, `scripts/`, `shared/`, and template files.
+3. Make all scripts executable.
+4. Skip files that already exist (safe to re-run).
+5. Print what to do next.
 
 ## Workspace layout after install
 
