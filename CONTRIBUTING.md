@@ -42,6 +42,10 @@ Rules for a good skill:
 ## How to add a new skill
 
 ```bash
+# clone the repo (HTTPS — no SSH config needed)
+git clone https://github.com/subarnasaikia/kaggle-skills.git
+cd kaggle-skills
+
 mkdir .claude/skills/my-new-skill
 # write .claude/skills/my-new-skill/SKILL.md
 ```
