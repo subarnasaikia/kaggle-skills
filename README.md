@@ -77,18 +77,34 @@ your-kaggle-workspace/
 
 ## Skills reference
 
+### Core workflow
 | Skill | What it does |
 |---|---|
 | `new-competition` | Scaffold a full competition folder with README, LOG, gitignore, venv prompt |
 | `submit-competition` | Pre-flight validate + safe submit with quota check and LOG update |
-| `run-local-eval` | Run kaggle-environments matches, report win rate and time budget |
-| `improve-agent` | Systematic agent improvement loop: diagnose → hypothesize → implement → verify |
 | `leaderboard-check` | Pull leaderboard, compare your best score, show gap to medals |
+| `post-submission-review` | Poll score, diff vs best, update LOG, capture learning if notable |
+
+### Agents / simulation
+| Skill | What it does |
+|---|---|
+| `run-local-eval` | Run kaggle-environments matches, report win rate and time budget |
+| `improve-agent` | Systematic improvement loop: diagnose → hypothesize → implement → verify |
+| `debug-agent` | Step through a replay, find the failing turn, print diagnostics |
+
+### Tabular / ML
+| Skill | What it does |
+|---|---|
+| `eda-audit` | Structured EDA: target dist, missing values, leakage scan, train/test shift |
+| `ensemble-blend` | Weighted average or rank average across multiple submission CSVs |
+
+### Learning system
+| Skill | What it does |
+|---|---|
 | `log-experiment` | Write hypothesis before running; fill outcome after |
 | `capture-learning` | Write a durable `.learnings/L-*.md` learning file |
 | `recall-learnings` | Surface prior learnings relevant to the current task |
 | `preflight-consult` | Sanity-check a plan against prior learnings before committing time |
-| `post-submission-review` | Poll score, diff vs best, update LOG, capture learning if notable |
 | `retrospect-session` | Extract 0-3 learnings at session end, refresh LEARNINGS.md digest |
 
 ## The learning system
@@ -105,6 +121,20 @@ session ends → retrospect-session extracts durable lessons
      ↓
 next session starts smarter
 ```
+
+## Competition templates
+
+`competitions/template/` — a fully scaffolded reference folder showing the expected structure and file formats. Use it as a reference when contributing or when `new-competition.sh` doesn't fit your needs.
+
+`.claude/templates/` — per-competition-type `CLAUDE.md` starters. Copy the one that matches your competition into `competitions/<slug>/CLAUDE.md`:
+
+| File | Competition type |
+|---|---|
+| `CLAUDE.tabular.md` | Tabular (LightGBM, XGBoost, feature engineering) |
+| `CLAUDE.simulation.md` | Agent / simulation (kaggle-environments) |
+| `CLAUDE.nlp.md` | NLP (text classification, generation, ranking) |
+| `CLAUDE.cv.md` | Computer vision (classification, detection, segmentation) |
+| `CLAUDE.notebook.md` | Code / notebook competitions (run on Kaggle's servers) |
 
 ## Shared utilities
 
